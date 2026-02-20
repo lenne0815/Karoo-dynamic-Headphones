@@ -27,6 +27,7 @@ jobs:
     
     - name: Create gradle.properties
       run: |
+        echo "" >> gradle.properties
         echo "gpr.user=${{ github.actor }}" >> gradle.properties
         echo "gpr.key=${{ secrets.GPR_KEY }}" >> gradle.properties
         cat gradle.properties
