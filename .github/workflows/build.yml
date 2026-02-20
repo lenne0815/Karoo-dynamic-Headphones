@@ -22,6 +22,9 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
+    - name: Accept Android licenses
+      run: yes | sdkmanager --licenses || true
+    
     - name: Cache Gradle packages
       uses: actions/cache@v4
       with:
@@ -34,13 +37,23 @@ jobs:
     
     - name: Create Gradle Wrapper
       run: |
-        gradle wrapper --gradle-version 8.5
-      env:
-        GPR_USER: ${{ github.actor }}
-        GPR_KEY: ${{ secrets.GITHUB_TOKEN }}
+        mkdir -p gradle/wrapper
+        echo 'distributionBase=GRADLE_USER_HOME
+        distributionPath=wrapper/dists
+        distributionUrl=https\://services.gradle.org/distributions/gradle-8.5-bin.zip
+        networkTimeout=10000
+        validateDistributionUrl=true
+        zipStoreBase=GRADLE_USER_HOME
+        zipStorePath=wrapper/dists' > gradle/wrapper/gradle-wrapper.properties
+        
+        curl -L -o gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar
+        
+        echo '#!/bin/sh
+        exec "$(dirname "$0")/gradle/wrapper/gradle-wrapper.jar" "$@"' > gradlew
+        chmod +x gradlew
     
     - name: Build Release APK
-      run: ./gradlew assembleRelease
+      run: ./gradlew assembleRelease --stacktrace
       env:
         GPR_USER: ${{ github.actor }}
         GPR_KEY: ${{ secrets.GITHUB_TOKEN }}
@@ -51,11 +64,16 @@ jobs:
         name: release-apk
         path: app/build/outputs/apk/release/app-release-unsigned.apk
     
+    - name: Rename APK
+      run: |
+        mkdir -p release
+        cp app/build/outputs/apk/release/app-release-unsigned.apk release/app-release-0.1.apk
+    
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        files: app/build/outputs/apk/release/app-release-unsigned.apk
+        files: release/app-release-0.1.apk
         name: Release ${{ github.ref_name }}
         body: |
           Karoo Dynamic Headphones - ${{ github.ref_name }}
@@ -69,6 +87,6 @@ jobs:
           ## Installation
           1. Download the APK
           2. Enable "Install from Unknown Sources" on your Karoo 3
-          3. Install via ADB: `adb install app-release-unsigned.apk`
+          3. Install via ADB: `adb install app-release-0.1.apk`
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
