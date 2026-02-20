@@ -16,7 +16,6 @@ class MainActivity : AppCompatActivity() {
     private var headphonesService: DynamicHeadphonesService? = null
     private var serviceBound = false
     
-    // Views
     private lateinit var switchEnable: Switch
     private lateinit var switchMode: Switch
     private lateinit var cardDynamicSettings: CardView
@@ -29,7 +28,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var textDefaultVolume: TextView
     private lateinit var textSpeed: TextView
     private lateinit var textStatus: TextView
-    private lateinit var textModeDescription: TextView
     
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -37,7 +35,6 @@ class MainActivity : AppCompatActivity() {
             headphonesService = binder.getService()
             serviceBound = true
             
-            // Set up callbacks
             headphonesService?.onSpeedUpdate = { speed ->
                 runOnUiThread {
                     textSpeed.text = "${String.format("%.1f", speed)} km/h"
@@ -84,29 +81,23 @@ class MainActivity : AppCompatActivity() {
         textDefaultVolume = findViewById(R.id.text_default_volume)
         textSpeed = findViewById(R.id.text_speed)
         textStatus = findViewById(R.id.text_status)
-        textModeDescription = findViewById(R.id.text_mode_description)
     }
     
     private fun setupListeners() {
-        // Main enable/disable switch
         switchEnable.setOnCheckedChangeListener { _, isChecked ->
             headphonesService?.setEnabled(isChecked)
             updateStatus()
         }
         
-        // Mode switch: Dynamic vs Normal
         switchMode.setOnCheckedChangeListener { _, isChecked ->
-            // isChecked = true -> Dynamic Mode
-            // isChecked = false -> Normal Mode
             headphonesService?.setDynamicMode(isChecked)
             updateModeUI(isChecked)
             updateStatus()
         }
         
-        // Pause threshold slider (0.1 to 5.0 km/h, step 0.1)
         seekBarPauseThreshold.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
-                val threshold = 0.1 + (progress * 0.1) // 0.1 to 5.0 km/h
+                val threshold = 0.1 + (progress * 0.1)
                 textPauseThreshold.text = "${String.format("%.1f", threshold)} km/h"
                 if (fromUser) {
                     headphonesService?.setPauseThreshold(threshold)
@@ -116,7 +107,6 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         
-        // Min/Max volume for dynamic mode
         seekBarMinVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
@@ -137,7 +127,6 @@ class MainActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
         
-        // Default volume for normal mode
         seekBarDefaultVolume.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 textDefaultVolume.text = "$progress%"
@@ -154,11 +143,9 @@ class MainActivity : AppCompatActivity() {
         if (isDynamic) {
             cardDynamicSettings.visibility = CardView.VISIBLE
             cardNormalSettings.visibility = CardView.GONE
-            textModeDescription.text = "Dynamic Mode: Music pauses when stopped, volume adjusts with speed"
         } else {
             cardDynamicSettings.visibility = CardView.GONE
             cardNormalSettings.visibility = CardView.VISIBLE
-            textModeDescription.text = "Normal Mode: Standard volume, no auto-pause"
         }
     }
     
@@ -167,18 +154,15 @@ class MainActivity : AppCompatActivity() {
             switchEnable.isChecked = service.isServiceEnabled()
             switchMode.isChecked = service.isDynamicModeEnabled()
             
-            // Set pause threshold slider
             val threshold = service.getPauseThreshold()
             seekBarPauseThreshold.progress = ((threshold - 0.1) / 0.1).toInt()
             textPauseThreshold.text = "${String.format("%.1f", threshold)} km/h"
             
-            // Set volume sliders
             seekBarMinVolume.progress = service.getMinVolume()
             seekBarMaxVolume.progress = service.getMaxVolume()
             seekBarDefaultVolume.progress = service.getDefaultVolume()
             textDefaultVolume.text = "${service.getDefaultVolume()}%"
             
-            // Set speed display
             textSpeed.text = "${String.format("%.1f", service.getCurrentSpeed())} km/h"
             
             updateModeUI(service.isDynamicModeEnabled())
@@ -189,9 +173,9 @@ class MainActivity : AppCompatActivity() {
     private fun updateStatus() {
         val status = if (headphonesService?.isServiceEnabled() == true) {
             val mode = if (headphonesService?.isDynamicModeEnabled() == true) {
-                "Dynamic Mode Active"
+                "Dynamic Mode"
             } else {
-                "Normal Mode Active"
+                "Normal Mode"
             }
             "Active - $mode"
         } else {
