@@ -25,16 +25,16 @@ jobs:
     - name: Accept Android licenses
       run: yes | sdkmanager --licenses || true
     
+    - name: Create gradle.properties
+      run: |
+        echo "gpr.user=${{ github.actor }}" >> gradle.properties
+        echo "gpr.key=${{ secrets.GPR_KEY }}" >> gradle.properties
+        cat gradle.properties
+    
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
       with:
         gradle-version: 8.5
-    
-    - name: Create gradle.properties for GitHub Packages auth
-      run: |
-        mkdir -p ~/.gradle
-        echo "gpr.user=${{ github.actor }}" >> ~/.gradle/gradle.properties
-        echo "gpr.key=${{ secrets.GPR_KEY }}" >> ~/.gradle/gradle.properties
     
     - name: Build Release APK
       run: gradle assembleRelease --stacktrace
