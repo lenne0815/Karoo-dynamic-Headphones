@@ -31,10 +31,7 @@ jobs:
         gradle-version: 8.5
     
     - name: Build Release APK
-      run: gradle assembleRelease --stacktrace -Dgpr.user=${{ github.actor }} -Dgpr.key=${{ secrets.GPR_KEY }}
-      env:
-        GPR_USER: ${{ github.actor }}
-        GPR_KEY: ${{ secrets.GPR_KEY }}
+      run: gradle assembleRelease --stacktrace
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
@@ -57,8 +54,8 @@ jobs:
           Karoo Dynamic Headphones - ${{ github.ref_name }}
           
           ## Features
-          - Auto-pause music when stopped
-          - Dynamic volume adjustment
+          - Auto-pause music when stopped (GPS-based speed detection)
+          - Dynamic volume adjustment based on cycling speed
           - Configurable pause threshold
           - Dynamic/Normal mode switching
           
@@ -66,5 +63,8 @@ jobs:
           1. Download the APK
           2. Enable "Install from Unknown Sources" on your Karoo 3
           3. Install via ADB: `adb install app-release-0.1.apk`
+          
+          ## Note
+          This version uses GPS for speed detection. Karoo Extension SDK integration coming in future release.
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

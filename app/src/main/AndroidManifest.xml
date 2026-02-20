@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION" />
 
@@ -36,17 +37,6 @@
             android:permission="android.permission.BIND_JOB_SERVICE">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-            </intent-filter>
-        </service>
-
-        <!-- Karoo Extension Service -->
-        <service
-            android:name=".extension.KarooHeadphonesExtension"
-            android:enabled="true"
-            android:exported="true"
-            android:permission="io.hammerhead.karoo.extension.permission.BIND_EXTENSION">
-            <intent-filter>
-                <action android:name="io.hammerhead.karoo.extension.action.BIND" />
             </intent-filter>
         </service>
 
