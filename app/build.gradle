@@ -35,10 +35,19 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.11.0'
     implementation 'androidx.cardview:cardview:1.0.0'
-    
+
     // Karoo Extension SDK
     implementation("io.hammerhead:karoo-ext:1.0.0")
-    
+
     // Coroutines for async operations
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
+}
+
+// Debug: Print dependencies to verify karoo-ext is resolved
+tasks.register("printDeps") {
+    doLast {
+        configurations["releaseRuntimeClasspath"].resolvedConfiguration.firstLevelModuleDependencies.forEach {
+            println("Dependency: ${it.moduleGroup}:${it.moduleName}:${it.moduleVersion}")
+        }
+    }
 }
