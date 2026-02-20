@@ -30,16 +30,6 @@ android {
     }
 }
 
-repositories {
-    maven {
-        url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
-        credentials {
-            username = providers.gradleProperty("gpr.user").getOrElse("")
-            password = providers.gradleProperty("gpr.key").getOrElse("")
-        }
-    }
-}
-
 dependencies {
     implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
