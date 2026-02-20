@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">Karoo Dynamic Headphones</string>
+    <string name="service_name">Dynamic Headphones Service</string>
+    <string name="service_description">Monitors cycling speed and controls music playback and volume</string>
+</resources>
