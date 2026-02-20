@@ -11,17 +11,16 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        // karoo-ext from Github Packages
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
-            credentials(PasswordCredentials::class) {
+            credentials {
                 username = providers.gradleProperty("gpr.user")
                     .orElse(providers.environmentVariable("GPR_USER"))
-                    .getOrNull() ?: ""
+                    .getOrElse("")
                 password = providers.gradleProperty("gpr.key")
                     .orElse(providers.environmentVariable("GPR_KEY"))
-                    .getOrNull() ?: ""
+                    .getOrElse("")
             }
         }
     }

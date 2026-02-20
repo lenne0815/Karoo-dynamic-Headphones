@@ -30,11 +30,17 @@ jobs:
       with:
         gradle-version: 8.5
     
+    - name: Create gradle.properties for GitHub Packages auth
+      run: |
+        mkdir -p ~/.gradle
+        echo "gpr.user=${{ github.actor }}" >> ~/.gradle/gradle.properties
+        echo "gpr.key=${{ secrets.GPR_KEY }}" >> ~/.gradle/gradle.properties
+    
     - name: Build Release APK
-      run: gradle assembleRelease --stacktrace -Pgpr.user=${{ github.actor }} -Pgpr.key=${{ secrets.GITHUB_TOKEN }}
+      run: gradle assembleRelease --stacktrace
       env:
         GPR_USER: ${{ github.actor }}
-        GPR_KEY: ${{ secrets.GITHUB_TOKEN }}
+        GPR_KEY: ${{ secrets.GPR_KEY }}
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
