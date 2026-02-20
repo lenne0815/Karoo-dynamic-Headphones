@@ -1,32 +1,22 @@
 package com.lenne0815.karooheadphones.service
 
-import android.Manifest
 import android.app.Service
 import android.content.Intent
-import android.content.pm.PackageManager
-import android.location.Location
-import android.location.LocationListener
-import android.location.LocationManager
 import android.media.AudioManager
+import android.media.session.MediaController
 import android.media.session.MediaSessionManager
 import android.os.Binder
-import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import androidx.core.app.ActivityCompat
 import kotlinx.coroutines.*
 
 class DynamicHeadphonesService : Service() {
     
     private val TAG = "DynamicHeadphones"
     private val binder = LocalBinder()
-    private val serviceScope = CoroutineScope(Dispatchers.Default + Job())
     
     private lateinit var audioManager: AudioManager
     private lateinit var mediaSessionManager: MediaSessionManager
-    private lateinit var locationManager: LocationManager
-    
-    private var locationListener: LocationListener? = null
     
     private var isEnabled = true
     private var isDynamicMode = true
@@ -53,56 +43,18 @@ class DynamicHeadphonesService : Service() {
         
         audioManager = getSystemService(AUDIO_SERVICE) as AudioManager
         mediaSessionManager = getSystemService(MEDIA_SESSION_SERVICE) as MediaSessionManager
-        locationManager = getSystemService(LOCATION_SERVICE) as LocationManager
-        
         defaultVolumePercent = getCurrentVolumePercent()
     }
     
-    fun startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) 
-            != PackageManager.PERMISSION_GRANTED) {
-            Log.w(TAG, "Location permission not granted")
-            return
-        }
-        
-        locationListener = object : LocationListener {
-            override fun onLocationChanged(location: Location) {
-                val speedMps = location.speed
-                currentSpeedKmh = speedMps * 3.6
-                onSpeedUpdate?.invoke(currentSpeedKmh)
-                handleSpeedChange(currentSpeedKmh)
-            }
-            
-            override fun onStatusChanged(provider: String?, status: Int, extras: Bundle?) {}
-            override fun onProviderEnabled(provider: String) {}
-            override fun onProviderDisabled(provider: String) {}
-        }
-        
-        try {
-            locationManager.requestLocationUpdates(
-                LocationManager.GPS_PROVIDER,
-                1000L,
-                1f,
-                locationListener!!
-            )
-            Log.d(TAG, "GPS location updates started")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to start location updates: ${e.message}")
-        }
-    }
-    
-    fun stopLocationUpdates() {
-        locationListener?.let {
-            locationManager.removeUpdates(it)
-            locationListener = null
+    fun updateSpeed(speedKmh: Double) {
+        currentSpeedKmh = speedKmh
+        onSpeedUpdate?.invoke(speedKmh)
+        if (isEnabled && isDynamicMode) {
+            handleSpeedChange(speedKmh)
         }
     }
     
     private fun handleSpeedChange(speedKmh: Double) {
-        if (!isEnabled) return
-        
-        if (!isDynamicMode) return
-        
         if (speedKmh < pauseThresholdKmh) {
             if (isMusicPlaying) {
                 wasMusicPlayingBeforeStop = true
@@ -140,9 +92,9 @@ class DynamicHeadphonesService : Service() {
     
     private fun setVolumePercent(percent: Int) {
         val maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)
-        val targetVolume = (maxVolume * percent / 100).coerceIn(0, maxVolume)
+        val targetVolume = ((maxVolume * percent) / 100).coerceIn(0, maxVolume)
         audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, targetVolume, 0)
-        Log.d(TAG, "Volume set to $percent%")
+        Log.d(TAG, "Volume: $percent%")
     }
     
     private fun pauseMusic() {
@@ -166,33 +118,20 @@ class DynamicHeadphonesService : Service() {
     
     fun setEnabled(enabled: Boolean) {
         isEnabled = enabled
-        if (enabled) {
-            startLocationUpdates()
-        } else {
-            stopLocationUpdates()
-        }
         onStatusUpdate?.invoke()
     }
     
     fun setDynamicMode(enabled: Boolean) {
         isDynamicMode = enabled
-        if (!enabled) {
-            setVolumePercent(defaultVolumePercent)
-        }
+        if (!enabled) setVolumePercent(defaultVolumePercent)
         onStatusUpdate?.invoke()
     }
     
-    fun setPauseThreshold(kmh: Double) {
-        pauseThresholdKmh = kmh.coerceAtLeast(0.0)
-    }
-    
-    fun setDefaultVolume(percent: Int) {
+    fun setPauseThreshold(kmh: Double) { pauseThresholdKmh = kmh.coerceAtLeast(0.0) }
+    fun setDefaultVolume(percent: Int) { 
         defaultVolumePercent = percent.coerceIn(0, 100)
-        if (!isDynamicMode) {
-            setVolumePercent(defaultVolumePercent)
-        }
+        if (!isDynamicMode) setVolumePercent(defaultVolumePercent)
     }
-    
     fun setVolumeRange(minPercent: Int, maxPercent: Int) {
         minVolumePercent = minPercent.coerceIn(0, 100)
         maxVolumePercent = maxPercent.coerceIn(0, 100)
@@ -206,17 +145,6 @@ class DynamicHeadphonesService : Service() {
     fun getMinVolume(): Int = minVolumePercent
     fun getMaxVolume(): Int = maxVolumePercent
     
-    override fun onBind(intent: Intent): IBinder {
-        return binder
-    }
-    
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        return START_STICKY
-    }
-    
-    override fun onDestroy() {
-        super.onDestroy()
-        stopLocationUpdates()
-        Log.d(TAG, "Service destroyed")
-    }
+    override fun onBind(intent: Intent): IBinder = binder
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 }
