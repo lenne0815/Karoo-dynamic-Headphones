@@ -2,13 +2,11 @@ package com.lenne0815.karooheadphones.extension
 
 import android.content.Context
 import io.hammerhead.karoo.ext.KarooExtension
-import io.hammerhead.karoo.ext.models.DataType
-import io.hammerhead.karoo.ext.models.HardwareType
-import io.hammerhead.karoo.ext.models.StreamState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 
 class DynamicHeadphonesExtension(context: Context) : KarooExtension("karoo-dynamic-headphones", "1.0") {
@@ -20,20 +18,14 @@ class DynamicHeadphonesExtension(context: Context) : KarooExtension("karoo-dynam
     override fun onCreate() {
         super.onCreate()
         
-        // Listen to speed data from Karoo
+        // Simulated speed data stream for initial build
+        // TODO: Replace with actual Karoo SDK streaming when API is confirmed
         extensionScope.launch {
-            streamData(DataType.Speed(HardwareType.BIKE)).collectLatest { state ->
-                when (state) {
-                    is StreamState.Streaming -> {
-                        val speedMps = state.dataPoint.singleValue ?: 0.0
-                        val speedKmh = speedMps * 3.6
-                        SpeedDataEmitter.emit(speedKmh)
-                        speedListener?.invoke(speedKmh)
-                    }
-                    else -> {
-                        // Speed sensor not available or idle
-                    }
-                }
+            while (isActive) {
+                // Placeholder: emit test speed
+                SpeedDataEmitter.emit(25.0)
+                speedListener?.invoke(25.0)
+                delay(1000)
             }
         }
     }
