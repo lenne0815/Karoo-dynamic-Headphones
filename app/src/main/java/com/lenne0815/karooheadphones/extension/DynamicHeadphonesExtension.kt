@@ -27,6 +27,7 @@ class DynamicHeadphonesExtension(context: Context) : KarooExtension("karoo-dynam
                     is StreamState.Streaming -> {
                         val speedMps = state.dataPoint.singleValue ?: 0.0
                         val speedKmh = speedMps * 3.6
+                        SpeedDataEmitter.emit(speedKmh)
                         speedListener?.invoke(speedKmh)
                     }
                     else -> {
