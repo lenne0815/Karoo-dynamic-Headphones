@@ -12,14 +12,14 @@ dependencyResolutionManagement {
         google()
         mavenCentral()
         // GitHub Packages for Karoo SDK - requires GPR_USER and GPR_KEY
-        // maven {
-        //     name = "GitHubPackages"
-        //     url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
-        //     credentials {
-        //         username = providers.gradleProperty("gpr.user").getOrElse("")
-        //         password = providers.gradleProperty("gpr.key").getOrElse("")
-        //     }
-        // }
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/hammerheadnav/karoo-ext")
+            credentials {
+                username = providers.gradleProperty("gpr.user").getOrElse("")
+                password = providers.gradleProperty("gpr.key").getOrElse("")
+            }
+        }
     }
 }
 
