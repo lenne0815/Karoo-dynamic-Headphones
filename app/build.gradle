@@ -37,7 +37,7 @@ dependencies {
     implementation 'androidx.cardview:cardview:1.0.0'
     
     // Karoo Extension Library - requires GPR_KEY secret
-    implementation("io.hammerhead:karoo-ext:1.0.0")
+    implementation("io.hammerhead:karoo-ext:1.1.8")
     
     // Coroutines for async operations
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
